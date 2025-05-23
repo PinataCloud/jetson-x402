@@ -3,14 +3,19 @@ import { account } from "./viem";
 
 const fetchWithPayment = wrapFetchWithPayment(fetch, account);
 
-const url = "http://localhost:3000/generate";
+const url = "http://localhost:3000/v1/chat/completions";
 
 async function main() {
   const response = await fetchWithPayment(url, {
-    //url should be something like https://api.example.com/paid-endpoint
     method: "POST",
     body: JSON.stringify({
-      prompt: "why is the sky blue?",
+      model: "llama3.2",
+      messages: [
+        {
+          "role": "user",
+          "content": "Write a one-sentence bedtime story about a unicorn."
+        }
+      ]
     }),
   })
 

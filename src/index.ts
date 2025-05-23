@@ -1,12 +1,19 @@
 import { Hono } from 'hono'
 import { paymentMiddleware } from "x402-hono"
 
-const app = new Hono()
+const app = new Hono().basePath('/v1')
 
 app.use(paymentMiddleware(
-  "0xaD73eafCAc4F4c6755DFc61770875fb8B6bC8A25", // your receiving wallet address
-  {  // Route configurations for protected endpoints
-    "/generate": {
+  "0xc900f41481B4F7C612AF9Ce3B1d16A7A1B6bd96E",
+  {
+    "/v1/generate": {
+      price: "$0.10",
+      network: "base-sepolia",
+      config: {
+        description: "Access to premium content",
+      }
+    },
+    "/v1/chat/completions": {
       price: "$0.10",
       network: "base-sepolia",
       config: {
@@ -42,5 +49,22 @@ app.post("/generate", async (c) => {
   console.log(ollamaData)
   return c.json(ollamaData)
 })
+
+app.post("/chat/completions", async (c) => {
+  const body = await c.req.json()
+  console.log(body)
+  const ollamaRes = await fetch('http://localhost:11434/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  const ollamaData = await ollamaRes.json()
+  console.log(ollamaData)
+  return c.json(ollamaData)
+})
+
 
 export default app
