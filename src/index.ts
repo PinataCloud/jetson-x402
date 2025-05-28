@@ -6,13 +6,6 @@ const app = new Hono().basePath('/v1')
 app.use(paymentMiddleware(
   "0xc900f41481B4F7C612AF9Ce3B1d16A7A1B6bd96E",
   {
-    "/v1/generate": {
-      price: "$0.10",
-      network: "base-sepolia",
-      config: {
-        description: "Access to premium content",
-      }
-    },
     "/v1/chat/completions": {
       price: "$0.10",
       network: "base-sepolia",
@@ -28,26 +21,6 @@ app.use(paymentMiddleware(
 
 app.get('/', (c) => {
   return c.text('Pay to Prompt')
-})
-
-app.post("/generate", async (c) => {
-  const body = await c.req.json()
-  console.log(body)
-  const ollamaRes = await fetch('http://localhost:11434/api/generate', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'llama3.2',
-      prompt: body.prompt,
-      stream: false
-    })
-  });
-
-  const ollamaData = await ollamaRes.json()
-  console.log(ollamaData)
-  return c.json(ollamaData)
 })
 
 app.post("/chat/completions", async (c) => {
