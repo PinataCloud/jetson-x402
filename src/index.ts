@@ -1,8 +1,11 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors';
 import { paymentMiddleware } from "x402-hono"
 import { chatCompletion } from './utils/ai';
 
 const app = new Hono().basePath('/v1')
+
+app.use(cors())
 
 app.use(paymentMiddleware(
   "0xc900f41481B4F7C612AF9Ce3B1d16A7A1B6bd96E",
