@@ -28,7 +28,7 @@ app.post("/chat/completions", async (c) => {
   const body = await c.req.json()
   console.log(body)
 
-  if(body.stream) {
+  if (body.stream) {
     // Set up streaming response
     c.header("Content-Type", "text/event-stream");
     c.header("Cache-Control", "no-cache");
@@ -40,8 +40,8 @@ app.post("/chat/completions", async (c) => {
         try {
           await chatCompletion(
             controller,
-            body.messages, 
-            body.model, 
+            body.messages,
+            body.model,
             body.stream
           );
           controller.close();
@@ -52,10 +52,11 @@ app.post("/chat/completions", async (c) => {
     });
 
     return c.body(stream);
-  } else {
-    const completion = await chatCompletion(null, body.messages, body.model, false);
-    return c.json(completion)
   }
+
+  const completion = await chatCompletion(null, body.messages, body.model, false);
+  return c.json(completion)
+}
 })
 
 
