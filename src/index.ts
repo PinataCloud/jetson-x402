@@ -59,7 +59,6 @@ app.post("/chat/completions", async (c) => {
 
   const completion = await chatCompletion(null, body.messages, body.model, false);
   return c.json(completion)
-}
 })
 
 
