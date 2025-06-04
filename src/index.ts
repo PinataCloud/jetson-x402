@@ -2,16 +2,17 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors';
 import { paymentMiddleware } from "x402-hono"
 import { chatCompletion } from './utils/ai';
+import { cors } from "hono/cors";
 
 const app = new Hono().basePath('/v1')
 
-app.use(cors())
+app.use(cors());
 
 app.use(paymentMiddleware(
   "0xc900f41481B4F7C612AF9Ce3B1d16A7A1B6bd96E",
   {
     "/v1/chat/completions": {
-      price: "$0.10",
+      price: "$0.001",
       network: "base-sepolia",
       config: {
         description: "Access to premium content",
@@ -28,16 +29,15 @@ app.get('/', (c) => {
 })
 
 app.post("/chat/completions", async (c) => {
-  const body = await c.req.json()
-  console.log(body)
-
+  const body = await c.req.json();
+  console.log(body);
+  
   if (body.stream) {
-    // Set up streaming response
-    c.header("Content-Type", "text/event-stream");
+    // Set headers for OpenAI streaming format, not SSE
+    c.header("Content-Type", "text/plain");
     c.header("Cache-Control", "no-cache");
     c.header("Connection", "keep-alive");
-
-    // Create a new readable stream
+    
     const stream = new ReadableStream({
       async start(controller) {
         try {
@@ -53,13 +53,12 @@ app.post("/chat/completions", async (c) => {
         }
       },
     });
-
     return c.body(stream);
+  } else {
+    const completion = await chatCompletion(null, body.messages, body.model, false);
+    return c.json(completion);
   }
-
-  const completion = await chatCompletion(null, body.messages, body.model, false);
-  return c.json(completion)
-})
+});
 
 
 export default app
