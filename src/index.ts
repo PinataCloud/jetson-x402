@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { paymentMiddleware } from "x402-hono"
+import { chatCompletion } from './utils/ai';
 
 const app = new Hono().basePath('/v1')
 
@@ -26,17 +27,35 @@ app.get('/', (c) => {
 app.post("/chat/completions", async (c) => {
   const body = await c.req.json()
   console.log(body)
-  const ollamaRes = await fetch('http://localhost:11434/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
 
-  const ollamaData = await ollamaRes.json()
-  console.log(ollamaData)
-  return c.json(ollamaData)
+  if(body.stream) {
+    // Set up streaming response
+    c.header("Content-Type", "text/event-stream");
+    c.header("Cache-Control", "no-cache");
+    c.header("Connection", "keep-alive");
+
+    // Create a new readable stream
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          await chatCompletion(
+            controller,
+            body.messages, 
+            body.model, 
+            body.stream
+          );
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+    });
+
+    return c.body(stream);
+  } else {
+    const completion = await chatCompletion(null, body.messages, body.model, false);
+    return c.json(completion)
+  }
 })
 
 
