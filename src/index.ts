@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import { paymentMiddleware } from "x402-hono"
 import { chatCompletion } from './utils/ai';
 import { cors } from "hono/cors";
+import { facilitator } from "@coinbase/x402";
 
 const app = new Hono().basePath('/v1')
 
@@ -13,15 +14,13 @@ app.use(paymentMiddleware(
   {
     "/v1/chat/completions": {
       price: "$0.001",
-      network: "base-sepolia",
+      network: "base",
       config: {
         description: "Access to premium content",
       }
     }
   },
-  {
-    url: "https://x402.org/facilitator", // Facilitator URL for Base Sepolia testnet.
-  }
+  facilitator
 ));
 
 app.get('/', (c) => {
@@ -31,13 +30,13 @@ app.get('/', (c) => {
 app.post("/chat/completions", async (c) => {
   const body = await c.req.json();
   console.log(body);
-  
+
   if (body.stream) {
     // Set headers for OpenAI streaming format, not SSE
     c.header("Content-Type", "text/plain");
     c.header("Cache-Control", "no-cache");
     c.header("Connection", "keep-alive");
-    
+
     const stream = new ReadableStream({
       async start(controller) {
         try {
@@ -54,10 +53,10 @@ app.post("/chat/completions", async (c) => {
       },
     });
     return c.body(stream);
-  } else {
-    const completion = await chatCompletion(null, body.messages, body.model, false);
-    return c.json(completion);
   }
+
+  const completion = await chatCompletion(null, body.messages, body.model, false);
+  return c.json(completion);
 });
 
 
