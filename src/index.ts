@@ -2,7 +2,6 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors';
 import { paymentMiddleware } from "x402-hono"
 import { chatCompletion } from './utils/ai';
-import { cors } from "hono/cors";
 import { facilitator } from "@coinbase/x402";
 
 const app = new Hono().basePath('/v1')
